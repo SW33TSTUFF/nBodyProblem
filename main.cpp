@@ -8,10 +8,16 @@ using namespace std;
 const double G = 6.674e-11;
 const double AU = 149.6e6 * 1000;
 double scale = 250 / AU;
-double timestep = 3600 * 24; // 1 day
+double timestep = 3600 * 24 / 1000; // 1 day
+// min fling distance 1.560086e11
+
 
 const int screenWidth = 1440;
 const int screenHeight = 810;
+
+float getSeperation(float x1, float y1, float x2, float y2) {
+    return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
+}
 
 class Planet {
 public:
@@ -99,28 +105,67 @@ public:
         xPos += velocity_x * timestep;
         yPos += velocity_y * timestep;
 
+        // for (const Planet& planet : planets) {
+        //     if (this == &planet) continue;
+        //     // This somewhat works
+        //     cout << planet.mass << "-" << planet.xPos << "," << planet.yPos << "|" << planet.velocity_x << planet.velocity_y << endl;
+        //     if (getSeperation(this->xPos, this->yPos, planet.xPos, planet.yPos) <= 1e11) {
+        //         this->mass = 0;
+        //         this->radius = 0;
+        //     }
+        // }
+
         orbit.push_back({ xPos, yPos });
     }
+
+    void canCollide(vector<Planet>& planets) {
+        for (size_t i = 0; i < planets.size(); i++) {
+            for (size_t j = i + 1; j < planets.size(); j++) {
+                float distance = sqrt(pow(planets[i].xPos - planets[j].xPos, 2) + pow(planets[i].yPos - planets[j].yPos, 2));
+                if (distance < (0.01*AU)) {
+                    // Handle collision
+
+                    // Update velocities and masses
+                    planets[i].velocity_x = 0;
+                    planets[i].velocity_y = 0;
+                    planets[j].velocity_x = 0;
+                    planets[j].velocity_y = 0;
+                    planets[i].mass = 0;
+                    planets[j].mass = 0;
+                    
+                    // Adjust positions to avoid overlap
+                    float overlap = (planets[i].radius + planets[j].radius) - distance;
+                    float dx = (planets[i].xPos - planets[j].xPos) / distance;
+                    float dy = (planets[i].yPos - planets[j].yPos) / distance;
+                    planets[i].xPos += overlap * dx;
+                    planets[i].yPos += overlap * dy;
+                    planets[j].xPos -= overlap * dx;
+                    planets[j].yPos -= overlap * dy;
+                }
+            }
+        }
+    }
+
+
 };
+
 
 int main() {
     InitWindow(screenWidth, screenHeight, "SIMULATION 1.0.0");
-    SetTargetFPS(10);
+    // SetTargetFPS(60);
 
     // Initialize planets
     Planet sun(0, 0, 30, ORANGE, 1.989e30);
-    Planet earth(-1 * AU, 0, 16, BLUE, 5.972e24);
-    Planet mars(-1.534 * AU, 0, 12, RED, 6.39e23);
-    Planet mercury(0.387 * AU, 0, 8, DARKGRAY, 3.30e23);
-    Planet venus(0.723 * AU, 0, 14, WHITE, 4.8685e24);
+    Planet x1(-sqrt(3)/2 * AU, 0, 10, BLUE, 5.972e32);
+    Planet x2(0, 1 * AU, 10, ORANGE, 5.972e32);
+    Planet x3(sqrt(3)/2 * AU, 0, 10, DARKGRAY, 5.972e32);
     sun.sun = true;
 
-    earth.velocity_y = 29.783 * 1000;
-    mars.velocity_y = 24.077 * 1000;
-    mercury.velocity_y = -47.4 * 1000;
-    venus.velocity_y = -35.02 * 1000;
+    x1.velocity_y = 29.783 * 10000;
+    x2.velocity_y = -29.783 * 10000;
+    x3.velocity_x = -29.783 * 10000;
 
-    vector<Planet> planets = { sun, earth, mars, mercury, venus };
+    vector<Planet> planets = {x1 , x2,  x3};
 
     while (!WindowShouldClose()) {
         BeginDrawing();
@@ -129,6 +174,7 @@ int main() {
         // Update and draw planets
         for (Planet& planet : planets) {
             planet.update_position(planets);
+            planet.canCollide(planets);
             planet.Draw();
         }
 
