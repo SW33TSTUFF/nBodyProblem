@@ -7,8 +7,9 @@ using namespace std;
 
 const double G = 6.674e-11;
 const double AU = 149.6e6 * 1000;
-double scale = 250 / AU;
-double timestep = 3600 * 24 / 1000; // 1 day
+double scale = 1500 / AU;
+double timestep = 3600 * 24 / 800; // 1 day
+int count = 1000;
 // min fling distance 1.560086e11
 
 
@@ -52,6 +53,12 @@ public:
             // Draw orbit lines
             for (size_t i = 0; i < updatedPoints.size() - 1; ++i) {
                 DrawLineEx(updatedPoints[i], updatedPoints[i + 1], 2, color);
+                if(count%50) {
+                    count++;
+                    updatedPoints.erase(updatedPoints.begin(), updatedPoints.begin());
+
+                }
+                count++;
             }
         }
 
@@ -155,17 +162,31 @@ int main() {
     // SetTargetFPS(60);
 
     // Initialize planets
-    Planet sun(0, 0, 30, ORANGE, 1.989e30);
-    Planet x1(-sqrt(3)/2 * AU, 0, 10, BLUE, 5.972e32);
-    Planet x2(0, 1 * AU, 10, ORANGE, 5.972e32);
-    Planet x3(sqrt(3)/2 * AU, 0, 10, DARKGRAY, 5.972e32);
+    Planet sun(0, 0, 10, ORANGE, 6e30);
+    // Planet sun2(0, 0, 10, RED, 6e30);
+    // Planet x1(-1 * AU, 0, 4, PURPLE, 5.972e32);
+    // Planet x2(-1 * AU, -1 * AU, 2, BLUE, 2.972e31);
+    // Planet x3(-1 * AU, 0.6 * AU, 3, GRAY, 5.972e31);
+    // Planet x4(0 * AU, 0.6 * AU, 3, GRAY, 5.972e31);
     sun.sun = true;
 
-    x1.velocity_y = 29.783 * 10000;
-    x2.velocity_y = -29.783 * 10000;
-    x3.velocity_x = -29.783 * 10000;
 
-    vector<Planet> planets = {x1 , x2,  x3};
+    Planet x1(-0.4 * AU, -1 * AU, 5, DARKGREEN, 5.972e32);
+    Planet x2(-0.4 * AU, 0, 6, BROWN, 5.972e32);
+    Planet x3(-0.2 * AU, AU , 8, WHITE, 5.972e32);
+    // Planet x4(1 * AU, -1 * AU, 4, DARKBROWN, 5.972e32);
+    // sun.velocity_y = sqrt(G*sun.mass/AU*0.5);
+    // sun2.velocity_y = -sqrt(G*sun.mass/AU*0.5);
+    // x1.velocity_x = 20 * 100;
+    // x1.velocity_y = -30.783 * 100;
+    x2.velocity_x = 40 * 10000;
+    // x2.velocity_y = 45.783 * 100;
+    // x3.velocity_x = 120 * 10000;
+    // x3.velocity_y = 100 * 100;
+    // x4.velocity_x = -10 * 100;
+    // x4.velocity_y = 100 * 100;
+
+    vector<Planet> planets = {x1, x2, x3};
 
     while (!WindowShouldClose()) {
         BeginDrawing();
